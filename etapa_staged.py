@@ -3,7 +3,6 @@ from google.cloud import storage
 import pandas as pd
 from google.oauth2 import service_account
 import pathlib
-!pip uninstall openpyxl
 
 
 def etapa_staged (bucket_name_staged,project_name):
