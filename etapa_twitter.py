@@ -8,8 +8,9 @@ import pandas as pd
 def run_twitter(linha_top):
     bearer_token = os.environ.get("BEARER_TOKEN")
     project_name = "boti-347200"
-    # search_url = "https://api.twitter.com/2/tweets/search/recent"
-    query = f"Boticário OR {linha_top} from:twitterdev -is:retweet lang:pt"
+    print(linha_top)
+    # search_url = "https://api.twitter.com/2/tweets/search/recent"    
+    query = f'Boticário {linha_top} lang:pt -is:retweet'
     tweet_fields = "tweet.fields=author_id,conversation_id,created_at,id,in_reply_to_user_id,public_metrics,text,lang"
     user_fields = "expansions=author_id&user.fields=id,name,username,created_at"
     # lingua = "lang%3Apt"
@@ -60,4 +61,4 @@ def run_twitter(linha_top):
 
 
 #if __name__ == "__main__":
- #   run_twitter(linha_top='')
+ #   run_twitter(linha_top='maquiagem')

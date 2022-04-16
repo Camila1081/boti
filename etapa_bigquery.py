@@ -2,7 +2,7 @@ import pandas_gbq
 import pandas as pd
 
 
-def etapa_bigquery(project_name):
+def etapa_bigquery(project_name,ti):
 
     # TABELA 1
     sql = """
@@ -75,5 +75,8 @@ def etapa_bigquery(project_name):
     """
     df_linha_TOP = pandas_gbq.read_gbq(sql, project_id=project_name)
 
-    linha_top = df_linha_TOP[0]
-    return linha_top
+    linha_TOP=df_linha_TOP.iloc[0][0]
+    ti.xcom_push(key='linha',value=linha_TOP)
+    return linha_TOP
+#if __name__ == "__main__":
+#    etapa_bigquery('boti-347200')

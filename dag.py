@@ -30,6 +30,11 @@ default_args = {
     "retry_delay": datetime.timedelta(minutes=5),
     "start_date": YESTERDAY,
 }
+bucket_name_raw = "base-raw"
+bucket_name_staged = "base-staged"
+project_name = "boti-347200"
+
+# Pegando o nome da Linha mais vendida em 12/2019 do step anterior
 
 with airflow.DAG(
     "boti_dag",
@@ -38,52 +43,37 @@ with airflow.DAG(
     schedule_interval=datetime.timedelta(days=1),
 ) as dag:
 
-    bucket_name_raw = "base-raw"
-    bucket_name_staged = "base-staged"
-    project_name = "boti-347200"
 
-    etapa_ingestao = PythonOperator(
+
+        etapa_ingestao = PythonOperator(
         task_id="ingestao",
         python_callable=etapa_raw,
         op_kwargs={"bucket_name_raw": "base-raw", "bucket_name_staged": "base-staged"},
         dag=dag,
-    )
+        )
 
-    etapa_transformacao = PythonOperator(
-        task_id="transformacao",
-        python_callable=etapa_staged,
-        op_kwargs={"bucket_name_staged": "base-staged", "project_name": "boti-347200"},
-        dag=dag,
-    )
-    etapa_db = PythonOperator(
-        task_id="db",
-        python_callable=etapa_bigquery,
-        op_kwargs={
-            "bucket_name_staged": "base-staged",
-            "project_name": "boti-347200",
-            "linha": {ti.xcom_pull(key="linha_top")},
-        },
-        dag=dag,
-    )
+        etapa_transformacao = PythonOperator(
+                task_id="transformacao",
+                python_callable=etapa_staged,
+                op_kwargs={"bucket_name_staged": "base-staged", "project_name": "boti-347200"},
+                dag=dag,
+                )
+        etapa_db = PythonOperator(
+                task_id="db",
+                python_callable=etapa_bigquery,
+                op_kwargs={
+                        "project_name": "boti-347200",
+                },
+                dag=dag,
+                )
 
-    # Pegando o nome da Linha mais vendida em 12/2019 do step anterior
-    def pull_function(**kwargs):
-        ti = kwargs["linha_top"]
-        ls = ti.xcom_pull(task_ids="etapa_bigquery")
-        print(ls)
 
-    pull_task = PythonOperator(
-        task_id="pull_task",
-        python_callable=pull_function,
-        provide_context=True,
-        dag=dag,
-    )
 
-    etapa_tw = PythonOperator(
-        task_id="twitter",
-        python_callable=run_twitter,
-        op_kwargs={"linha_top": "{{ti.xcom_pull('etapa_bigquery')}}"},
-        dag=dag,
-    )
+        etapa_tw = PythonOperator(
+                task_id="twitter",
+                op_kwargs={"linha_top": "{{ti.xcom_pull('db')}}"},
+                python_callable=run_twitter, 
+                dag=dag,
+                )
 
-    etapa_ingestao >> etapa_transformacao >> etapa_db >> etapa_tw
+        etapa_ingestao >> etapa_transformacao >> etapa_db >> etapa_tw
