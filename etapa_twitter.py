@@ -11,7 +11,7 @@ def run_twitter():
     bearer_token = os.environ.get("BEARER_TOKEN")
     project_name='boti-347200'
     #search_url = "https://api.twitter.com/2/tweets/search/recent"
-    query = 'Boticário OR Maquiagem'
+    query = 'Boticário OR Maquiagem from:twitterdev -is:retweet'
     tweet_fields = "tweet.fields=author_id,conversation_id,created_at,id,in_reply_to_user_id,public_metrics,text"
     user_fields = "expansions=author_id&user.fields=id,name,username,created_at"
     max_results ="max_results=50"
