@@ -6,11 +6,13 @@ from airflow.operators.python import PythonOperator
 from etapa_raw import etapa_raw
 from etapa_staged import etapa_staged
 from etapa_bigquery import etapa_bigquery
-from etapa_twitter import run_twitter,bearer_oauth
+from etapa_twitter import run_twitter
 import google.auth
+import os
 
 
 credentials, project_id = google.auth.default()
+bearer_token = os.environ.get("BEARER_TOKEN")
 
 
 # If you are running Airflow in more than one time zone
@@ -30,7 +32,7 @@ default_args = {
 }
 
 with airflow.DAG(
-        'composer_sample_dag',
+        'boti_dag',
         catchup=False,
         default_args=default_args,
         schedule_interval=datetime.timedelta(days=1)) as dag:
@@ -63,7 +65,7 @@ with airflow.DAG(
     etapa_tw = PythonOperator(
             task_id='twitter',
             python_callable=run_twitter,
-            op_kwargs={'bucket_name_staged' : "base-staged",'project_name': 'boti-347200'},
+            #op_kwargs={'bearer_token' : "base-staged"},
             dag=dag
     )
 

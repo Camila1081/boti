@@ -7,9 +7,8 @@ from google.cloud import bigquery
 
 # To set your environment variables in your terminal run the following line:
 # export 'BEARER_TOKEN'='<your_bearer_token>'
-bearer_token = os.environ.get("BEARER_TOKEN")
-def main():
-    
+def run_twitter():
+    bearer_token = os.environ.get("BEARER_TOKEN")
     project_name='boti-347200'
     #search_url = "https://api.twitter.com/2/tweets/search/recent"
     query = 'Boticário maquiagem'
@@ -18,19 +17,28 @@ def main():
     max_results ="max_results=50"
     lingua = " lang%3Apt"
     #search_url= "https://api.twitter.com/2/tweets/search/recent?query=Botic%C3%A1rio&src=typed_query"
-    search_url = "https://api.twitter.com/2/tweets/search/recent?query={}{}&{}&{}&{}".format(
-            query, lingua,tweet_fields,max_results, user_fields
+    search_url = "https://api.twitter.com/2/tweets/search/recent?query={}{}&{}&{}".format(
+            query, lingua,tweet_fields,user_fields
         )
     # Optional params: start_time,end_time,since_id,until_id,max_results,next_token,
     # expansions,tweet.fields,media.fields,poll.fields,place.fields,user.fields
     #query_params = {'query': '(from:twitterdev -is:retweet) OR #twitterdev','tweet.fields': 'author_id',"max_results" : 100}
+    query_params = {"max_results" : 100}
 
     #json_response = connect_to_endpoint(self.search_url, self.query_params)
+    def bearer_oauth(r):
+        """
+        Method required by bearer token authentication.
+        """
 
-    response = requests.get(search_url, auth=bearer_oauth)
+        r.headers["Authorization"] = f"Bearer {bearer_token}"
+        r.headers["User-Agent"] = "v2RecentSearchPython"
+        return r
+
+    response = requests.get(search_url, auth=bearer_oauth,params=query_params)
     
     if response.status_code != 200:
-        raise Exception(json_response.status_code, json_response.text)
+        raise Exception(response.status_code, response.text)
     
     json_response = response.json()
 
@@ -51,16 +59,9 @@ def main():
     df_bq.to_gbq(destination_table = 'dados_twitter.twits_recentes', project_id=project_name,if_exists='replace' )
 
 
-def bearer_oauth(r):
-    """
-    Method required by bearer token authentication.
-    """
 
-    r.headers["Authorization"] = f"Bearer {bearer_token}"
-    r.headers["User-Agent"] = "v2RecentSearchPython"
-    return r
 
 
 
 if __name__ == "__main__":
-    main()
+    run_twitter()
