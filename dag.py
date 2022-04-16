@@ -6,6 +6,7 @@ from airflow.operators.python import PythonOperator
 from etapa_raw import etapa_raw
 from etapa_staged import etapa_staged
 from etapa_bigquery import etapa_bigquery
+from etapa_twitter import run_twitter,bearer_oauth
 import google.auth
 
 
@@ -58,5 +59,13 @@ with airflow.DAG(
             op_kwargs={'bucket_name_staged' : "base-staged",'project_name': 'boti-347200'},
             dag=dag
     )
-    etapa_ingestao>>etapa_transformacao>>etapa_db
+
+    etapa_tw = PythonOperator(
+            task_id='twitter',
+            python_callable=run_twitter,
+            op_kwargs={'bucket_name_staged' : "base-staged",'project_name': 'boti-347200'},
+            dag=dag
+    )
+
+    etapa_ingestao>>etapa_transformacao>>etapa_db>>etapa_tw
  
